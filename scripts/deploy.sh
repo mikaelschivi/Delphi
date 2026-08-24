@@ -83,6 +83,29 @@ if ! ssh "${SSH_OPTS[@]}" -o BatchMode=yes -o ConnectTimeout=10 "$REMOTE" true 2
   exit 1
 fi
 
+echo "==> checking prerequisites on the server"
+ssh "${SSH_OPTS[@]}" "$REMOTE" bash -s <<'PREFLIGHT'
+set -euo pipefail
+if command -v rsync >/dev/null 2>&1; then
+  exit 0
+fi
+echo "-- rsync missing, installing it"
+if [ "$(id -u)" -eq 0 ]; then SUDO=""; else SUDO="sudo"; fi
+if command -v apt-get >/dev/null 2>&1; then
+  $SUDO apt-get update -qq
+  $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -y -qq rsync
+elif command -v dnf >/dev/null 2>&1; then
+  $SUDO dnf install -y -q rsync
+elif command -v yum >/dev/null 2>&1; then
+  $SUDO yum install -y -q rsync
+elif command -v apk >/dev/null 2>&1; then
+  $SUDO apk add --no-cache rsync
+else
+  echo "no supported package manager found; install rsync manually" >&2
+  exit 1
+fi
+PREFLIGHT
+
 RSYNC_OPTS=(-az --delete --exclude '.git/' --exclude '.env'
   --exclude '__pycache__/' --exclude '*.pyc' --exclude '.venv/'
   --exclude '.pytest_cache/' --exclude '.ruff_cache/'
