@@ -1,0 +1,39 @@
+services:
+  delphi_db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-delphi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-delphi}
+      POSTGRES_DB: ${POSTGRES_DB:-delphi}
+    volumes:
+      - delphi_postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  delphi_backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-delphi}:${POSTGRES_PASSWORD:-delphi}@delphi_db:5432/${POSTGRES_DB:-delphi}
+      POLL_INTERVAL_S: ${POLL_INTERVAL_S:-60}
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    depends_on:
+      - delphi_db
+    networks:
+      - internal
+
+  delphi_frontend:
+    build: ./frontend
+    ports:
+      - "12559:80"
+    depends_on:
+      - delphi_backend
+    networks:
+      - internal
+
+networks:
+  internal:
+
+volumes:
+  delphi_postgres_data:

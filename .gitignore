@@ -1,0 +1,28 @@
+# Secrets — .env holds POSTGRES_PASSWORD, never commit it
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node / Vite
+node_modules/
+dist/
+.vite/
+
+# Editors & OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Logs
+*.log

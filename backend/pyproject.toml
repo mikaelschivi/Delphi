@@ -1,0 +1,25 @@
+[project]
+name = "delphi-backend"
+version = "0.1.0"
+description = "Delphi backend: API + polling engine (GBM forecasts vs Coinbase data)"
+requires-python = ">=3.12"
+dependencies = [
+    "aiohttp>=3.9",
+    "tenacity>=8.2",
+    "psycopg[binary]>=3.1",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+]
+
+[project.scripts]
+delphi-backend = "delphi_backend.main:run"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/delphi_backend"]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
