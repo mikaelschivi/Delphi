@@ -74,9 +74,38 @@ export default function App() {
         <ScorePanel />
       </div>
 
-      <footer style={{ margin: "1.25rem 0 2rem", fontSize: 12, color: "var(--text-muted)" }}>
-        {lastUpdated ? `Last updated ${formatRelativeUpdatedAt(lastUpdated)}` : " "} · refreshes
-        every 10s
+      <footer
+        style={{
+          margin: "1.25rem 0 2rem",
+          paddingTop: "1rem",
+          borderTop: "1px solid var(--border)",
+          fontSize: 12,
+          color: "var(--text-muted)",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "0.5rem 1.5rem",
+          justifyContent: "space-between",
+        }}
+      >
+        <span>
+          {lastUpdated ? `Last updated ${formatRelativeUpdatedAt(lastUpdated)}` : " "} · refreshes
+          every 10s
+        </span>
+        <span>
+          Feito por: <strong style={{ color: "var(--text-primary)" }}>Mikael</strong>,{" "}
+          <strong style={{ color: "var(--text-primary)" }}>Allan</strong> e{" "}
+          <strong style={{ color: "var(--text-primary)" }}>Vinicius</strong> · Delphi ·{" "}
+          <a
+            href="https://pt.wikipedia.org/wiki/Movimento_browniano_geom%C3%A9trico"
+            target="_blank"
+            rel="noreferrer noopener"
+            style={{ color: "var(--text-primary)", textDecoration: "underline" }}
+          >
+            modelo GBM
+          </a>{" "}
+          sobre mercados Polymarket, preço e volatilidade da Coinbase, notícias via Cointelegraph
+          RSS
+        </span>
       </footer>
 
       <ApiFeed />
