@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI):
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="delphi", lifespan=lifespan)
+    app = FastAPI(title="Delphi Market Forecasting", lifespan=lifespan)
     app.include_router(router)
     return app
 
