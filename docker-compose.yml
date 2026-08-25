@@ -1,5 +1,14 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    # json-file rotates by size, not age. 66m x 3 files = ~198 MB ceiling per service.
+    # Re-size from the real write rate: see README / scripts note.
+    max-size: "66m"
+    max-file: "3"
+
 services:
   delphi_db:
+    logging: *default-logging
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-delphi}
@@ -11,6 +20,7 @@ services:
       - internal
 
   delphi_backend:
+    logging: *default-logging
     build: ./backend
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-delphi}:${POSTGRES_PASSWORD:-delphi}@delphi_db:5432/${POSTGRES_DB:-delphi}
@@ -24,6 +34,7 @@ services:
       - internal
 
   delphi_frontend:
+    logging: *default-logging
     build: ./frontend
     ports:
       - "${APP_PORT:-80}:80"

@@ -32,8 +32,31 @@ if ! docker compose version >/dev/null 2>&1; then
   exit 1
 fi
 
+
+# Docker's default json-file driver never rotates, so container logs grow until
+# they fill the disk. Set an engine-wide ceiling as a backstop for containers
+# started outside docker-compose.yml (which sets its own per-service limits).
+DAEMON_JSON=/etc/docker/daemon.json
+if [ -f "$DAEMON_JSON" ]; then
+  echo "$DAEMON_JSON already exists, leaving it alone"
+  echo "  ensure it sets log-driver json-file with max-size/max-file, or logs stay unbounded"
+else
+  echo "writing default log rotation to $DAEMON_JSON"
+  $SUDO mkdir -p /etc/docker
+  printf '%s\n' \
+    '{' \
+    '  "log-driver": "json-file",' \
+    '  "log-opts": { "max-size": "66m", "max-file": "3" }' \
+    '}' | $SUDO tee "$DAEMON_JSON" >/dev/null
+  RESTART_DOCKER=1
+fi
+
 if command -v systemctl >/dev/null 2>&1; then
   $SUDO systemctl enable --now docker
+  # Log options are read at daemon start; a fresh daemon.json needs a restart.
+  if [ -n "${RESTART_DOCKER:-}" ]; then
+    $SUDO systemctl restart docker
+  fi
 fi
 
 mkdir -p "$APP_DIR"
