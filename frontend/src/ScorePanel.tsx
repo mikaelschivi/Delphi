@@ -25,11 +25,24 @@ const scoreValue: CSSProperties = {
   fontVariantNumeric: "tabular-nums",
 };
 
-function Score({ label, value, accent }: { label: string; value: string; accent?: string }) {
+function Score({
+  label,
+  value,
+  accent,
+  note,
+}: {
+  label: string;
+  value: string;
+  accent?: string;
+  note?: string;
+}) {
   return (
     <div style={{ flex: "1 1 140px", minWidth: 140 }}>
       <div style={{ ...heading, marginBottom: 6 }}>{label}</div>
       <div style={{ ...scoreValue, color: accent ?? "var(--text-primary)" }}>{value}</div>
+      {note && (
+        <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>{note}</div>
+      )}
     </div>
   );
 }
@@ -55,6 +68,11 @@ export function ScorePanel() {
   const skillAccent =
     skill === null ? undefined : skill > 0 ? "var(--good)" : "var(--critical)";
   const populated = data.buckets.filter((bucket) => bucket.count > 0);
+  // Brier and skill only cover markets that had a market price; the calibration
+  // table and base rate cover every settled market. Label both when they differ.
+  const cohortsDiffer = data.compared_markets !== data.resolved_markets;
+  const comparedNote = cohortsDiffer ? `${data.compared_markets} with market price` : undefined;
+  const allNote = cohortsDiffer ? `all ${data.resolved_markets} settled` : undefined;
 
   return (
     <div style={panel}>
@@ -67,18 +85,38 @@ export function ScorePanel() {
 
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1.25rem" }}>
         <Score label="Settled markets" value={String(data.resolved_markets)} />
-        <Score label="Model Brier" value={formatBrier(data.model_brier_compared)} />
-        <Score label="Market Brier" value={formatBrier(data.market_brier_compared)} />
+        <Score
+          label="Model Brier"
+          value={formatBrier(data.model_brier_compared)}
+          note={comparedNote}
+        />
+        <Score
+          label="Market Brier"
+          value={formatBrier(data.market_brier_compared)}
+          note={comparedNote}
+        />
         <Score
           label="Skill vs market"
           value={skill === null ? "—" : `${skill >= 0 ? "+" : ""}${skill.toFixed(4)}`}
           accent={skillAccent}
+          note={comparedNote}
         />
-        <Score label="Base rate (YES)" value={formatPct(data.base_rate)} />
+        <Score label="Base rate (YES)" value={formatPct(data.base_rate)} note={allNote} />
       </div>
 
       {populated.length > 0 && (
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <caption
+            style={{
+              ...heading,
+              captionSide: "top",
+              textAlign: "left",
+              paddingBottom: "0.5rem",
+            }}
+          >
+            Model calibration · all {data.resolved_markets} settled market
+            {data.resolved_markets === 1 ? "" : "s"}
+          </caption>
           <thead>
             <tr>
               {["Forecast bucket", "N", "Mean forecast", "Observed"].map((label) => (
