@@ -58,3 +58,16 @@ def test_summarize_without_resolutions_reports_no_scores():
     assert result["resolved_markets"] == 0
     assert result["model_brier"] is None
     assert result["skill_vs_market"] is None
+
+
+def test_summarize_buckets_cover_every_resolved_market():
+    rows = [
+        {"model_probability": 0.9, "market_implied_probability": 0.6, "outcome": True},
+        {"model_probability": 0.2, "market_implied_probability": 0.4, "outcome": False},
+        {"model_probability": 0.7, "market_implied_probability": None, "outcome": True},
+    ]
+
+    result = summarize(rows)
+
+    assert sum(bucket["count"] for bucket in result["buckets"]) == result["resolved_markets"]
+    assert result["buckets"][7]["count"] == 1
